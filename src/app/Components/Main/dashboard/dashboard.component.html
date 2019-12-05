@@ -1,0 +1,22 @@
+<div class="container">
+  <div class="row">
+    <div class="col-12 col-xl-3">
+      <div class="card" style="width: 18rem;">
+        <img src="../../../../assets/Images/Upload.png" class="card-img-top" alt="">
+        <div class="card-body">
+          <input type="file" class="card-title">
+          <a href="#" class="btn btn-primary">Upload</a>
+        </div>
+      </div>
+    </div>
+    <div class="col-12 col-xl-3">
+      <div class="card" style="width: 18rem;">
+        <img src="../../../../assets/Images/File.png" class="card-img-top" alt="">
+        <div class="card-body">
+          <h3>FileTitle.extension</h3>
+          <a [routerLink]="['/home',{outlets: {'main': ['file']}}]" class="btn btn-primary">View File</a>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
