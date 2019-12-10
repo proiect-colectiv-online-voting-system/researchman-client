@@ -23,14 +23,29 @@
           <div class="card card-signin my-5">
             <div class="card-body">
               <h5 class="card-title text-center">Log In</h5>
-              <form class="form-signin">
                 <button class="btn btn-lg btn-google btn-block text-uppercase" type="submit"><i class="fab fa-google mr-2"></i> Sign in with Google</button>
-              </form>
             </div>
           </div>
         </div>
       </div>
     </div>
 </body>
+
+<script src="../vendor/jquery/jquery.min.js"></script>
+<script src="../vendor/bootstrap/js/bootstrap.bundle.min.js"></script>
+
+<script type="text/javascript">
+  function setCookie(cname, cvalue, exdays) {
+    var d = new Date();
+    d.setTime(d.getTime() + (exdays*24*60*60*1000));
+    var expires = "expires="+ d.toUTCString();
+    document.cookie = cname + "=" + cvalue + ";" + expires + ";path=/";
+  }
+
+  $(".btn-google").click(function(){
+    setCookie("login", "ABC123", 1);
+    window.location.replace("../index.html");
+  });
+</script>
 
 </html>

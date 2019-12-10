@@ -56,10 +56,42 @@
   <script src="vendor/jquery/jquery.min.js"></script>
   <script src="vendor/bootstrap/js/bootstrap.bundle.min.js"></script>
 
-  <script>
+  <script type="text/javascript">
     $("#menu-toggle").click(function(e) {
       e.preventDefault();
       $("#wrapper").toggleClass("toggled");
+    });
+  </script>
+
+  <script type="text/javascript">
+    function getCookie(cname) {
+      var name = cname + "=";
+      var ca = document.cookie.split(';');
+      for(var i = 0; i < ca.length; i++) {
+        var c = ca[i];
+        while (c.charAt(0) == ' ') {
+          c = c.substring(1);
+        }
+        if (c.indexOf(name) == 0) {
+          return c.substring(name.length, c.length);
+        }
+      }
+      return "";
+    }
+
+    $(document).ready(
+      function checkCookie() {
+        var user = getCookie("login");
+        if (user == "") {
+          window.location.replace("./pages/login.html");
+        }
+    });
+  </script>
+
+  <!--TODO: remove this-->
+  <script type="text/javascript">
+    $(".sidebar-heading").click(function (){
+        document.cookie = "login" + '=; expires=Thu, 01 Jan 1970 00:00:01 GMT;';
     });
   </script>
 
