@@ -8,11 +8,11 @@
   <meta name="description" content="">
   <meta name="author" content="">
 
-  <title>Researchman - Home</title>
+  <title>Researchman - Upload</title>
 
-  <link href="vendor/bootstrap/css/bootstrap.min.css" rel="stylesheet">
-
-  <link href="css/simple-sidebar.css" rel="stylesheet">
+  <link href="../vendor/bootstrap/css/bootstrap.min.css" rel="stylesheet">
+  <link href="../css/simple-sidebar.css" rel="stylesheet">
+  <link href="../css/upload_form.css" rel="stylesheet">
 
 </head>
 
@@ -23,9 +23,9 @@
     <div class="bg-light border-right" id="sidebar-wrapper">
       <div class="sidebar-heading">Main Menu</div>
       <div class="list-group list-group-flush">
-        <a href="/pages/upload.html" class="list-group-item list-group-item-action bg-light">Upload</a>
-        <img id="researchman-logo" src="/resources/Researchman-logo.png">
+        <a href="#" class="list-group-item list-group-item-action bg-light">Upload</a>
       </div>
+      <img id="researchman-logo" src="/resources/Researchman-logo.png">
     </div>
 
     <div id="page-content-wrapper">
@@ -47,19 +47,41 @@
       </nav>
 
       <div class="container-fluid">
-        <h1 class="mt-4">Researchman - Home</h1>
+        <div class="container">  
+            <form id="contact" action="" method="post">
+                <fieldset>
+                    <input placeholder="Document name" type="text" tabindex="1" required autofocus>
+                </fieldset>
+                <fieldset>
+                    <input type="file" name="files">
+                </fieldset>
+                <fieldset>
+                <button name="submit" type="submit" id="contact-submit" data-submit="...Sending">Submit</button>
+                </fieldset>
+            </form>
+        </div>
       </div>
     </div>
 
   </div>
 
-  <script src="vendor/jquery/jquery.min.js"></script>
-  <script src="vendor/bootstrap/js/bootstrap.bundle.min.js"></script>
+  <script src="../vendor/jquery/jquery.min.js"></script>
+  <script src="../vendor/bootstrap/js/bootstrap.bundle.min.js"></script>
 
-  <script>
+  <script type="text/javascript">
     $("#menu-toggle").click(function(e) {
       e.preventDefault();
       $("#wrapper").toggleClass("toggled");
+    });
+  </script>
+
+  <script type="text/javascript">
+    const formElement = document.querySelector('form');
+    formElement.addEventListener('submit', e => {
+      e.preventDefault();
+      const request = new XMLHttpRequest();
+      request.open('POST', 'http://157.230.97.203:1337/upload');
+      request.send(new FormData(formElement));
     });
   </script>
 
