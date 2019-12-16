@@ -54,7 +54,7 @@
                     <input placeholder="Document name" type="text" tabindex="1" required autofocus>
                 </fieldset>
                 <fieldset>
-                    <input type="file" name="files">
+                    <input type="file" name="files" id="ExcelFile" onchange="parseExcelFile(this)">
                 </fieldset>
                 <fieldset>
                 <button name="submit" type="submit" id="contact-submit" data-submit="...Sending">Submit</button>
@@ -81,11 +81,131 @@
     formElement.addEventListener('submit', e => {
       e.preventDefault();
       const request = new XMLHttpRequest();
-      request.open('POST', 'http://157.230.97.203:1337/upload');
+      request.open('POST', 'http://localhost:1337/upload');
       request.send(new FormData(formElement));
     });
   </script>
 
-</body>
+<script src="https://cdn.jsdelivr.net/npm/exceljs@1.13.0/dist/exceljs.min.js" type="text/javascript"></script>
 
+<script type="text/javascript">
+var excelString = ''
+function parseExcelFile(inputElement) {
+  var files = inputElement.files || [];
+  if (!files.length) return;
+  var file = files[0];
+
+  console.time();
+  var reader = new FileReader();
+  reader.onloadend = function(event) {
+    var arrayBuffer = reader.result
+    var workbook = new ExcelJS.Workbook();
+    workbook.xlsx.load(arrayBuffer).then(function(workbook) {
+      var result = ''
+      workbook.worksheets.forEach(function (sheet) {
+        sheet.eachRow(function (row, rowNumber) {
+          for(var i=0;i<row.values.length;i++){
+            result += row.values[i] + " `"
+          }
+          result += ' | \n'
+        })
+      })
+      console.timeEnd()
+      console.time()
+      createJSON(result)
+      console.timeEnd()
+    });
+  };
+  reader.readAsArrayBuffer(file);
+}
+</script>
+
+<script type="text/javascript">
+var reviste = []
+var conferinte = []
+
+function startCountReviste(line){
+  if(line.includes("Reviste")){
+    return true;
+  }
+  return false;
+}
+
+function startCountConferinte(line){
+  if(line.includes("Conferinte")){
+    return true;
+  }
+  return false;
+}
+
+function createJSON(excelString){
+  var excel_lines = excelString.split("|")
+  var i = 0;
+  while(!startCountReviste(excel_lines[i])){
+    i++;
+  }
+  i++;
+  // reviste
+  for(;i<=excel_lines.length;i++){
+    console.log(excel_lines[i])
+    if(startCountConferinte(excel_lines[i])){
+      i++;
+      break;
+    }
+    words = excel_lines[i].split('`')
+    for(var j=0;j<=words.length;j++){
+      console.log(words[j])
+    }
+    var revista = {
+      "number": words[1],
+      "title": words[2],
+      "authors": words[3],
+      "publication": words[4],
+      "volum-pages": words[5],
+      "year": words[6],
+      "publication-category": words[7],
+      "nr-authors": words[8]
+    }
+    console.log(revista)
+    reviste.push(revista)
+  }
+  // conferinte
+  for(;i<=excel_lines.length;i++){
+    console.log(excel_lines[i])
+    words = excel_lines[i].split('`')
+    for(var j=0;j<=words.length;j++){
+      console.log(words[j])
+    }
+    if(words[1].includes("undefined")){
+      break;
+    }
+    var conferinta = {
+      "number": words[1],
+      "title": words[2],
+      "authors": words[3],
+      "publication": words[4],
+      "volum-pages": words[5],
+      "year": words[6],
+      "publication-category": words[7],
+      "nr-authors": words[8]
+    }
+    console.log(conferinta)
+    conferinte.push(conferinta)
+  }
+}
+
+$.ajax({
+  type: "POST",
+  url: "<put_url_here>",
+  data: JSON.stringify({ Reviste: reviste, Conferinte: conferinte}),
+  contentType: "application/json; charset=utf-8",
+    dataType: "json",
+    success: function(data){console.log("Succesful post request!")},
+    failure: function(errMsg) {
+        console.log("Failure!");
+    }
+});
+</script>
+
+</body>
 </html>
