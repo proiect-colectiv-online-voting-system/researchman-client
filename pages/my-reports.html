@@ -12,7 +12,7 @@
 
   <link href="../vendor/bootstrap/css/bootstrap.min.css" rel="stylesheet">
   <link href="../css/simple-sidebar.css" rel="stylesheet">
-  <link href="../css/upload_form.css" rel="stylesheet">
+  <!-- <link href="../css/upload_form.css" rel="stylesheet"> -->
 
 </head>
 
@@ -24,7 +24,7 @@
       <div class="sidebar-heading">Main Menu</div>
       <div class="list-group list-group-flush">
         <a href="/pages/upload.html" class="list-group-item list-group-item-action bg-light">Upload</a>
-        <a href="/pages/my-reports.html" class="list-group-item list-group-item-action bg-light">My Reports</a>
+        <a href="/pages/upload.html" class="list-group-item list-group-item-action bg-light">My Reports</a>
         <img id="researchman-logo" src="/resources/Researchman-logo.png">
       </div>
     </div>
@@ -48,19 +48,11 @@
       </nav>
 
       <div class="container-fluid">
-        <div class="container">  
-            <form id="contact" action="" method="post">
-                <fieldset>
-                    <input placeholder="Document name" type="text" tabindex="1" required autofocus>
-                </fieldset>
-                <fieldset>
-                    <input type="file" name="files">
-                </fieldset>
-                <fieldset>
-                <button name="submit" type="submit" id="contact-submit" data-submit="...Sending">Submit</button>
-                </fieldset>
-            </form>
-        </div>
+        <h1 class="mt-4"><span id="username">{}</span>'s Reports</h1>
+      </div>
+
+      <div class="container-fluid">
+        <div id="reports"></div>
       </div>
     </div>
 
@@ -76,15 +68,28 @@
     });
   </script>
 
-  <script type="text/javascript">
-    const formElement = document.querySelector('form');
-    formElement.addEventListener('submit', e => {
-      e.preventDefault();
-      const request = new XMLHttpRequest();
-      request.open('POST', 'http://157.230.97.203:1337/upload');
-      request.send(new FormData(formElement));
+<script type="text/javascript">
+    $(document).ready( () => {
+      if(!localStorage.getItem("username")) {
+        window.location.replace("../pages/login.html");
+      } else {
+        $("#username").text(localStorage.getItem("username"));
+
+        $.get(`http://localhost:1337/reportfiles?Uploader=${localStorage.getItem('username')}`, (data, status) => {
+          $("#reports").html();
+
+          for(var k in data) {
+            report = data[k]
+            s = $("#reports").html()
+
+            $("#reports").html(s + JSON.stringify(data[k]));
+          }
+        });
+      }
+
+      // http://localhost:1337/reportfiles?Uploader=
     });
-  </script>
+</script>
 
 </body>
 

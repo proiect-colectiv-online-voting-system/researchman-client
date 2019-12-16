@@ -24,6 +24,7 @@
       <div class="sidebar-heading">Main Menu</div>
       <div class="list-group list-group-flush">
         <a href="/pages/upload.html" class="list-group-item list-group-item-action bg-light">Upload</a>
+        <a href="/pages/my-reports.html" class="list-group-item list-group-item-action bg-light">My Reports</a>
         <img id="researchman-logo" src="/resources/Researchman-logo.png">
       </div>
     </div>
@@ -64,35 +65,43 @@
   </script>
 
   <script type="text/javascript">
-    function getCookie(cname) {
-      var name = cname + "=";
-      var ca = document.cookie.split(';');
-      for(var i = 0; i < ca.length; i++) {
-        var c = ca[i];
-        while (c.charAt(0) == ' ') {
-          c = c.substring(1);
-        }
-        if (c.indexOf(name) == 0) {
-          return c.substring(name.length, c.length);
-        }
-      }
-      return "";
-    }
+    // function getCookie(cname) {
+    //   var name = cname + "=";
+    //   var ca = document.cookie.split(';');
+    //   for(var i = 0; i < ca.length; i++) {
+    //     var c = ca[i];
+    //     while (c.charAt(0) == ' ') {
+    //       c = c.substring(1);
+    //     }
+    //     if (c.indexOf(name) == 0) {
+    //       return c.substring(name.length, c.length);
+    //     }
+    //   }
+    //   return "";
+    // }
 
-    $(document).ready(
-      function checkCookie() {
-        var user = getCookie("login");
-        if (user == "") {
-          window.location.replace("./pages/login.html");
+    $(document).ready( () => {
+      var cat = localStorage.getItem('login');
+      var url_crap = location.search
+
+      if(cat || cat == "yes" || url_crap) {
+        user = location.href.substr(location.href.indexOf("%5Bemail%5D=") + 12);
+        user = user.substr(0, user.indexOf("%40"))
+        
+        if(!localStorage.getItem("username")) {
+          localStorage.setItem("username", user);
         }
+      } else {
+        window.location.replace("./pages/login.html");
+      }
     });
   </script>
 
   <!--TODO: remove this-->
   <script type="text/javascript">
-    $(".sidebar-heading").click(function (){
-        document.cookie = "login" + '=; expires=Thu, 01 Jan 1970 00:00:01 GMT;';
-    });
+    // $(".sidebar-heading").click(function (){
+    //     document.cookie = "login" + '=; expires=Thu, 01 Jan 1970 00:00:01 GMT;';
+    // });
   </script>
 
 </body>
