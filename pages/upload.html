@@ -49,9 +49,9 @@
 
       <div class="container-fluid">
         <div class="container">  
-            <form id="contact" action="" method="post">
+            <form id="contact" action="" method="post" name="report_upload_form">
                 <fieldset>
-                    <input placeholder="Document name" type="text" tabindex="1" required autofocus>
+                    <input placeholder="Document name" type="text" tabindex="1" required autofocus id="uploader_name">
                 </fieldset>
                 <fieldset>
                     <input type="file" name="files" id="ExcelFile" onchange="parseExcelFile(this)">
@@ -192,12 +192,10 @@ function createJSON(excelString){
     console.log(conferinta)
     conferinte.push(conferinta)
   }
-}
-
-$.ajax({
+  $.ajax({
   type: "POST",
-  url: "<put_url_here>",
-  data: JSON.stringify({ Reviste: reviste, Conferinte: conferinte}),
+  url: "http://localhost:1337/reportfiles",
+  data: JSON.stringify({ Uploader: localStorage.getItem("username"), name: $("#uploader_name").val(), ParsedData: {Reviste: reviste, Conferinte: conferinte}}),
   contentType: "application/json; charset=utf-8",
     dataType: "json",
     success: function(data){console.log("Succesful post request!")},
@@ -205,6 +203,9 @@ $.ajax({
         console.log("Failure!");
     }
 });
+}
+
+
 </script>
 
 </body>
