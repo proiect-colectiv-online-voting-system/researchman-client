@@ -23,10 +23,11 @@
     <div class="bg-light border-right" id="sidebar-wrapper">
       <div class="sidebar-heading">Main Menu</div>
       <div class="list-group list-group-flush">
-        <a href="/pages/upload.html" class="list-group-item list-group-item-action bg-light">Upload</a>
-        <a href="/pages/my-reports.html" class="list-group-item list-group-item-action bg-light">My Reports</a>
-        <img id="researchman-logo" src="/resources/Researchman-logo.png">
-      </div>
+          <a href="/pages/upload.html" class="list-group-item list-group-item-action bg-light">Upload</a>
+          <a href="/pages/upload.html" class="list-group-item list-group-item-action bg-light">My Publications</a>
+          <img id="researchman-logo" src="/resources/Researchman-logo.png">
+          <a href="/index.html" class="list-group-item list-group-item-action bg-danger text-white" onclick="localStorage.clear();">Log out</a>
+        </div>
     </div>
 
     <div id="page-content-wrapper">
@@ -57,7 +58,7 @@
                     <input type="file" name="files" id="ExcelFile" onchange="parseExcelFile(this)">
                 </fieldset>
                 <fieldset>
-                <button name="submit" type="submit" id="contact-submit" data-submit="...Sending">Submit</button>
+                <button name="submit" type="submit" id="contact-submit" onclick="upload()" data-submit="...Sending">Submit</button>
                 </fieldset>
             </form>
         </div>
@@ -153,6 +154,13 @@ function startCountPerspectivaC(line){
   return false;
 }
 
+function startCountPerspectivaD(line){
+  if(line.includes("Perspectiva D")){
+    return true;
+  }
+  return false;
+}
+
 function countUndefined(line){
   var count = (line.match(/undefined/g) || []).length;
   if(count > 5) return true;
@@ -219,17 +227,6 @@ function createJSON(excelString){
     // console.log(conferinta)
     conferinte.push(conferinta)
   }
-  // $.ajax({
-  //   type: "POST",
-  //   url: "http://localhost:1337/reportfiles",
-  //   data: JSON.stringify({ Uploader: localStorage.getItem("username"), name: $("#uploader_name").val(), ParsedData: {Reviste: reviste, Conferinte: conferinte}}),
-  //   contentType: "application/json; charset=utf-8",
-  //     dataType: "json",
-  //     success: function(data){console.log("Succesful post request!")},
-  //     failure: function(errMsg) {
-  //         console.log("Failure!");
-  //     }
-  // });
 
   // PERSPECTIVA C
   while(!startCountPerspectivaC(excel_lines[i])){
@@ -248,11 +245,22 @@ function createJSON(excelString){
         }
 
   while(i<excel_lines.length){
+    console.log(excel_lines[i]);
     if(countUndefined(excel_lines[i])){
       i++;
-    }
-    if(!foundNewCitation(excel_lines[i])){
+    } else if(!foundNewCitation(excel_lines[i])){
       words = excel_lines[i].split('`')
+      var undefined_count = 0;
+      for(var t = 1; t <= 7; t++) {
+        if(words[t] == undefined) {
+          undefined_count++;
+        }
+      }
+
+      if(undefined_count > 2) {
+        break;
+      }
+ 
       if(words[6] != undefined && words[7] != undefined){
         assoc_paper_citations["citations"].push({
           "number": words[1],
@@ -263,10 +271,13 @@ function createJSON(excelString){
           "year": words[6],
           "publication-category": words[7]
         });
+        
+      }
+    } else {
+      if(assoc_paper_citations["citations"].length > 0) {
         console.log(assoc_paper_citations)
         citations.push(assoc_paper_citations)
       }
-    } else {
       citated_paper = excel_lines[i-1]
       author_title = citated_paper.split('`')[1]
       assoc_paper_citations = {
@@ -277,11 +288,14 @@ function createJSON(excelString){
     }
     i++;
   }
+}
 
+function upload() {
+  $("#contact").preventDefault = true;
   $.ajax({
     type: "POST",
-    url: "change_me",
-    data: JSON.stringify({ Uploader: localStorage.getItem("username"), name: $("#uploader_name").val(), ParsedData: {Citations: citations}}),
+    url: "http://localhost:1337/reportfiles",
+    data: JSON.stringify({ Uploader: localStorage.getItem("username"), name: $("#uploader_name").val(), ParsedData: {Reviste: reviste, Conferinte: conferinte, Citari: citations}}),
     contentType: "application/json; charset=utf-8",
       dataType: "json",
       success: function(data){console.log("Succesful post request!")},

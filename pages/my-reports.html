@@ -70,6 +70,14 @@
         <div id="conferences"></div>
       </div>
 
+      <div class="container-fluid">
+          <h1 class="mt-4"><span id="username3">{}</span>'s Citations</h1>
+        </div>
+  
+        <div class="container-fluid">
+          <div id="citations"></div>
+        </div>
+
 <script type="text/javascript" src="https://www.gstatic.com/charts/loader.js"></script>
 
 
@@ -95,6 +103,7 @@ $(document).ready( () => {
   } else {
     $("#username1").text(localStorage.getItem("username"));
     $("#username2").text(localStorage.getItem("username"));
+    $("#username3").text(localStorage.getItem("username"));
 
     $.get(`http://localhost:1337/reportfiles?Uploader=${localStorage.getItem('username')}`, (data, status) => {
       the_thing = data;
@@ -126,6 +135,14 @@ $(document).ready( () => {
     </tr>
   </thead>
   <tbody>`;
+
+      var citation_content = `<table class="table table-striped">
+  <thead>
+    <tr>
+      <th scope="col" colspan="6">Citari</th>
+    </tr>
+  </thead>
+  <tbody>`;
       for(var k in data) {
         for(var kk in data[k].ParsedData.Reviste) {
           var revista = data[k].ParsedData.Reviste[kk];
@@ -154,14 +171,38 @@ $(document).ready( () => {
   <td>${conferinta["publication-category"]}</td>
 </tr>`;
         }
-      }
 
-      conference_content += `
+        conference_content += `
       </tbody>
     </table>`;
 
+        for(var kk in data[k].ParsedData.Citari) {
+          var lucrare = data[k].ParsedData.Citari[kk];
+
+          citation_content += `
+<tr>
+  <th colspan="6">${lucrare["associated-paper"]} - Cited ${lucrare.citations.length} times</th>
+</tr>`;
+
+          for(var kkk in lucrare.citations) {
+            var citation = lucrare.citations[kkk];
+            citation_content += `
+<tr>
+  <td>${citation["citation-title"]}</td>
+  <td>${citation["citation-authors"]}</td>
+  <td>${citation["publication"]}</td>
+  <td>${citation["volum-pages"]}</td>
+  <td>${citation["year"]}</td>
+  <td>${citation["publication-category"]}</td>
+</tr>`;
+
+          }
+        }
+      }
+
       $("#journals").html(journal_content);
       $("#conferences").html(conference_content);
+      $("#citations").html(citation_content);
     });
   }
 
