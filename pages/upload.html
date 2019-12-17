@@ -220,17 +220,6 @@ function createJSON(excelString){
     // console.log(conferinta)
     conferinte.push(conferinta)
   }
-  $.ajax({
-    type: "POST",
-    url: "http://localhost:1337/reportfiles",
-    data: JSON.stringify({ Uploader: localStorage.getItem("username"), name: $("#uploader_name").val(), ParsedData: {Reviste: reviste, Conferinte: conferinte}}),
-    contentType: "application/json; charset=utf-8",
-      dataType: "json",
-      success: function(data){console.log("Succesful post request!")},
-      failure: function(errMsg) {
-          console.log("Failure!");
-      }
-  });
 
   // PERSPECTIVA C
   while(!startCountPerspectivaC(excel_lines[i])){
@@ -274,8 +263,8 @@ function createJSON(excelString){
 
   $.ajax({
     type: "POST",
-    url: "change_me",
-    data: JSON.stringify({ Uploader: localStorage.getItem("username"), name: $("#uploader_name").val(), ParsedData: {Citations: citations}}),
+    url: "http://localhost:1337/reportfiles",
+    data: JSON.stringify({ Uploader: localStorage.getItem("username"), name: $("#uploader_name").val(), ParsedData: {Reviste: reviste, Conferinte: conferinte, Citations: citations}}),
     contentType: "application/json; charset=utf-8",
       dataType: "json",
       success: function(data){console.log("Succesful post request!")},
