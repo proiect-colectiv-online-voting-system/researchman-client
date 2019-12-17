@@ -24,9 +24,8 @@
       <div class="sidebar-heading">Main Menu</div>
       <div class="list-group list-group-flush">
         <a href="/pages/upload.html" class="list-group-item list-group-item-action bg-light">Upload</a>
-        <a href="/pages/my-reports.html" class="list-group-item list-group-item-action bg-light">My Publications</a>
+        <a href="/pages/my-reports.html" class="list-group-item list-group-item-action bg-light">My Reports</a>
         <img id="researchman-logo" src="/resources/Researchman-logo.png">
-        <a href="/index.html" class="list-group-item list-group-item-action bg-danger text-white" onclick="localStorage.clear();">Log out</a>
       </div>
     </div>
 
@@ -220,6 +219,17 @@ function createJSON(excelString){
     // console.log(conferinta)
     conferinte.push(conferinta)
   }
+  // $.ajax({
+  //   type: "POST",
+  //   url: "http://localhost:1337/reportfiles",
+  //   data: JSON.stringify({ Uploader: localStorage.getItem("username"), name: $("#uploader_name").val(), ParsedData: {Reviste: reviste, Conferinte: conferinte}}),
+  //   contentType: "application/json; charset=utf-8",
+  //     dataType: "json",
+  //     success: function(data){console.log("Succesful post request!")},
+  //     failure: function(errMsg) {
+  //         console.log("Failure!");
+  //     }
+  // });
 
   // PERSPECTIVA C
   while(!startCountPerspectivaC(excel_lines[i])){
@@ -230,19 +240,21 @@ function createJSON(excelString){
       i++;
   }
 
-  citated_paper = excel_lines[i-1]
+  var citated_paper = excel_lines[i-1]
+  var author_title = citated_paper.split('`')[1]
+  var assoc_paper_citations = {
+          "associated-paper": author_title,
+          "citations": []
+        }
 
   while(i<excel_lines.length){
     if(countUndefined(excel_lines[i])){
       i++;
     }
     if(!foundNewCitation(excel_lines[i])){
-      // console.log(excel_lines[i])
-      author_title = citated_paper.split('`')[1]
       words = excel_lines[i].split('`')
       if(words[6] != undefined && words[7] != undefined){
-        var citation = {
-          "associated-paper": author_title,
+        assoc_paper_citations["citations"].push({
           "number": words[1],
           "citation-title": words[2],
           "citation-authors": words[3],
@@ -250,12 +262,17 @@ function createJSON(excelString){
           "volum-pages": words[5],
           "year": words[6],
           "publication-category": words[7]
-        }
-        // console.log(citation)
-        citations.push(citation)
+        });
+        console.log(assoc_paper_citations)
+        citations.push(assoc_paper_citations)
       }
     } else {
       citated_paper = excel_lines[i-1]
+      author_title = citated_paper.split('`')[1]
+      assoc_paper_citations = {
+          "associated-paper": author_title,
+          "citations": []
+        }
       i++;
     }
     i++;
@@ -263,8 +280,8 @@ function createJSON(excelString){
 
   $.ajax({
     type: "POST",
-    url: "http://localhost:1337/reportfiles",
-    data: JSON.stringify({ Uploader: localStorage.getItem("username"), name: $("#uploader_name").val(), ParsedData: {Reviste: reviste, Conferinte: conferinte, Citations: citations}}),
+    url: "change_me",
+    data: JSON.stringify({ Uploader: localStorage.getItem("username"), name: $("#uploader_name").val(), ParsedData: {Citations: citations}}),
     contentType: "application/json; charset=utf-8",
       dataType: "json",
       success: function(data){console.log("Succesful post request!")},
