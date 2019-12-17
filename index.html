@@ -24,8 +24,9 @@
       <div class="sidebar-heading">Main Menu</div>
       <div class="list-group list-group-flush">
         <a href="/pages/upload.html" class="list-group-item list-group-item-action bg-light">Upload</a>
-        <a href="/pages/my-reports.html" class="list-group-item list-group-item-action bg-light">My Reports</a>
+        <a href="/pages/my-reports.html" class="list-group-item list-group-item-action bg-light">My Publications</a>
         <img id="researchman-logo" src="/resources/Researchman-logo.png">
+        <a href="/index.html" class="list-group-item list-group-item-action bg-danger text-white" onclick="localStorage.clear();">Log out</a>
       </div>
     </div>
 
@@ -48,7 +49,13 @@
       </nav>
 
       <div class="container-fluid">
-        <h1 class="mt-4">Researchman - Home</h1>
+        <h1 class="mt-4" id="greeting">Researchman - Home</h1>
+        <h3 class="mt-4" id="summary">Researchman - Home</h3>
+
+        <div id="chart_div_1" style="height: 24rem;"></div>
+
+        <div id="chart_div_2" style="height: 24rem;"></div>
+        
       </div>
     </div>
 
@@ -56,6 +63,7 @@
 
   <script src="vendor/jquery/jquery.min.js"></script>
   <script src="vendor/bootstrap/js/bootstrap.bundle.min.js"></script>
+  <script type="text/javascript" src="https://www.gstatic.com/charts/loader.js"></script>
 
   <script type="text/javascript">
     $("#menu-toggle").click(function(e) {
@@ -65,32 +73,101 @@
   </script>
 
   <script type="text/javascript">
-    // function getCookie(cname) {
-    //   var name = cname + "=";
-    //   var ca = document.cookie.split(';');
-    //   for(var i = 0; i < ca.length; i++) {
-    //     var c = ca[i];
-    //     while (c.charAt(0) == ' ') {
-    //       c = c.substring(1);
-    //     }
-    //     if (c.indexOf(name) == 0) {
-    //       return c.substring(name.length, c.length);
-    //     }
-    //   }
-    //   return "";
-    // }
-
     $(document).ready( () => {
       var cat = localStorage.getItem('login');
       var url_crap = location.search
 
-      if(cat || cat == "yes" || url_crap) {
+      if(cat || cat == "yes" || url_crap || localStorage.getItem("username")) {
         user = location.href.substr(location.href.indexOf("%5Bemail%5D=") + 12);
         user = user.substr(0, user.indexOf("%40"))
         
         if(!localStorage.getItem("username")) {
           localStorage.setItem("username", user);
+        } else {
+          user = localStorage.getItem("username");
         }
+        
+        $("#greeting").text("Welcome to ResearchMan, " + user)
+
+        $.get(`http://localhost:1337/reportfiles/count?Uploader=${localStorage.getItem('username')}`, (data, status) => {
+          $("#summary").html("You have <b>" + data + "</b> uploaded reports, generating the following KPIs:");
+
+          $.get(`http://localhost:1337/reportfiles?Uploader=${localStorage.getItem('username')}`, (data, status) => {
+            the_thing = data;
+
+            var yrdata = [['Year', 'Publications']];
+            var yrpubmap = {};
+            var grdata = [['Grade', 'Publications']];
+            var gradepubmap = {};
+
+            for(var i in the_thing) {
+              for(var rk in the_thing[i].ParsedData.Reviste) {
+                var p = the_thing[i].ParsedData.Reviste[rk];
+                p.year = parseInt(p.year);
+
+                if(yrpubmap[p.year]) {
+                  yrpubmap[p.year] += 1;
+                } else {
+                  yrpubmap[p.year] = 1;
+                }
+
+                if(gradepubmap[p["publication-category"]]) {
+                  gradepubmap[p["publication-category"]] += 1;
+                } else {
+                  gradepubmap[p["publication-category"]] = 1;
+                }
+              }
+
+              for(var rk in the_thing[i].ParsedData.Conferinte) {
+                var p = the_thing[i].ParsedData.Conferinte[rk];
+                p.year = parseInt(p.year);
+
+                if(yrpubmap[p.year]) {
+                  yrpubmap[p.year] += 1;
+                } else {
+                  yrpubmap[p.year] = 1;
+                }
+
+                if(gradepubmap[p["publication-category"]]) {
+                  gradepubmap[p["publication-category"]] += 1;
+                } else {
+                  gradepubmap[p["publication-category"]] = 1;
+                }
+              }
+            }
+
+            for(var k in yrpubmap) {
+              yrdata.push([k, yrpubmap[k]]);
+            }
+
+            for(var k in gradepubmap) {
+              grdata.push([k, gradepubmap[k]]);
+            }
+
+            google.charts.load('current', {'packages':['bar']});
+            google.charts.setOnLoadCallback(drawChart);
+            function drawChart() {
+              var options_yearchart = {
+                chart: {
+                  title: 'Research Performance',
+                  subtitle: 'Number of publications per year',
+                }
+              };
+
+              var options_gradechart = {
+                chart: {
+                  title: 'Research Performance',
+                  subtitle: 'Number of publications per outlet grade',
+                }
+              };
+              
+              var chart1 = new google.charts.Bar(document.getElementById('chart_div_1'));
+              var chart2 = new google.charts.Bar(document.getElementById('chart_div_2'));
+              chart1.draw(google.visualization.arrayToDataTable(yrdata), google.charts.Bar.convertOptions(options_yearchart));
+              chart2.draw(google.visualization.arrayToDataTable(grdata), google.charts.Bar.convertOptions(options_gradechart));
+            }
+          });
+        });
       } else {
         window.location.replace("./pages/login.html");
       }

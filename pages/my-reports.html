@@ -24,8 +24,9 @@
       <div class="sidebar-heading">Main Menu</div>
       <div class="list-group list-group-flush">
         <a href="/pages/upload.html" class="list-group-item list-group-item-action bg-light">Upload</a>
-        <a href="/pages/upload.html" class="list-group-item list-group-item-action bg-light">My Reports</a>
+        <a href="/pages/upload.html" class="list-group-item list-group-item-action bg-light">My Publications</a>
         <img id="researchman-logo" src="/resources/Researchman-logo.png">
+        <a href="/index.html" class="list-group-item list-group-item-action bg-danger text-white" onclick="localStorage.clear();">Log out</a>
       </div>
     </div>
 
@@ -48,12 +49,31 @@
       </nav>
 
       <div class="container-fluid">
-        <h1 class="mt-4"><span id="username">{}</span>'s Reports</h1>
+        <div>
+          <h1 class="mt-4"><span id="username1">{}</span>'s Journals</h1>
+        </div>
+        <div>
+          <button type="button" class="btn btn-primary" id="download-button">Download data as JSON</button>
+        </div>
+      </div>
+      <br/>
+
+      <div class="container-fluid">
+        <div id="journals"></div>
       </div>
 
       <div class="container-fluid">
-        <div id="reports"></div>
+        <h1 class="mt-4"><span id="username2">{}</span>'s Conferences</h1>
       </div>
+
+      <div class="container-fluid">
+        <div id="conferences"></div>
+      </div>
+
+<script type="text/javascript" src="https://www.gstatic.com/charts/loader.js"></script>
+
+
+<div id="chart_div" style="height: 32rem;"></div>
     </div>
 
   </div>
@@ -69,26 +89,108 @@
   </script>
 
 <script type="text/javascript">
-    $(document).ready( () => {
-      if(!localStorage.getItem("username")) {
-        window.location.replace("../pages/login.html");
-      } else {
-        $("#username").text(localStorage.getItem("username"));
+$(document).ready( () => {
+  if(!localStorage.getItem("username")) {
+    window.location.replace("../pages/login.html");
+  } else {
+    $("#username1").text(localStorage.getItem("username"));
+    $("#username2").text(localStorage.getItem("username"));
 
-        $.get(`http://localhost:1337/reportfiles?Uploader=${localStorage.getItem('username')}`, (data, status) => {
-          $("#reports").html();
+    $.get(`http://localhost:1337/reportfiles?Uploader=${localStorage.getItem('username')}`, (data, status) => {
+      the_thing = data;
+      $("#journals").html();
+      // $("#reports").html(JSON.stringify(data, null, 4));
 
-          for(var k in data) {
-            report = data[k]
-            s = $("#reports").html()
+      var journal_content = `<table class="table table-striped">
+  <thead>
+    <tr>
+      <th scope="col">Titlu</th>
+      <th scope="col">Autori</th>
+      <th scope="col">An</th>
+      <th scope="col">Publicatie</th>
+      <th scope="col">Volum, Pagini</th>
+      <th scope="col">Categorie Publicatie</th>
+    </tr>
+  </thead>
+  <tbody>`;
 
-            $("#reports").html(s + JSON.stringify(data[k]));
-          }
-        });
+    var conference_content = `<table class="table table-striped">
+  <thead>
+    <tr>
+      <th scope="col">Titlu</th>
+      <th scope="col">Autori</th>
+      <th scope="col">An</th>
+      <th scope="col">Publicatie</th>
+      <th scope="col">Volum, Pagini</th>
+      <th scope="col">Categorie Publicatie</th>
+    </tr>
+  </thead>
+  <tbody>`;
+      for(var k in data) {
+        for(var kk in data[k].ParsedData.Reviste) {
+          var revista = data[k].ParsedData.Reviste[kk];
+
+          journal_content += `
+<tr>
+  <td>${revista.title}</td>
+  <td>${revista.authors}</td>
+  <td>${revista.year}</td>
+  <td>${revista.publication}</td>
+  <td>${revista["volum-pages"]}</td>
+  <td>${revista["publication-category"]}</td>
+</tr>`;
+        }
+
+        for(var kk in data[k].ParsedData.Conferinte) {
+          var conferinta = data[k].ParsedData.Conferinte[kk];
+
+          conference_content += `
+<tr>
+  <td>${conferinta.title}</td>
+  <td>${conferinta.authors}</td>
+  <td>${conferinta.year}</td>
+  <td>${conferinta.publication}</td>
+  <td>${conferinta["volum-pages"]}</td>
+  <td>${conferinta["publication-category"]}</td>
+</tr>`;
+        }
       }
 
-      // http://localhost:1337/reportfiles?Uploader=
+      conference_content += `
+      </tbody>
+    </table>`;
+
+      $("#journals").html(journal_content);
+      $("#conferences").html(conference_content);
     });
+  }
+
+  // http://localhost:1337/reportfiles?Uploader=
+});
+</script>
+
+
+<script type="text/javascript">
+  function download(content, fileName, contentType) {
+    var a = document.createElement("a");
+    var file = new Blob([JSON.stringify(content, null, 4)], {type: contentType});
+    a.href = URL.createObjectURL(file);
+    a.download = fileName;
+    a.click();
+    URL.revokeObjectURL(a.href)
+  }
+
+  $("#download-button").click( (e) => {
+    $.get(`http://localhost:1337/reportfiles?Uploader=${localStorage.getItem('username')}`, (data, status) => {
+      json_data = [];
+
+      for(var k in data) {
+        json_data.push(data[k].ParsedData);
+      }
+
+      download(json_data, `${localStorage.getItem("username")}_reports.json`, "text/plain");
+    });
+  });
 </script>
 
 </body>
